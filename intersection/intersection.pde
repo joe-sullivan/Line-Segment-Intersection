@@ -3,7 +3,8 @@ final color RED = color(217,107,114);
 final color BLUE = color(148,164,181);
 
 boolean _debug = true;
-ArrayList<LineSegment> _lines; // holds set of lines
+EventQueue _events; // holds events and line segements
+ArrayList<LineSegment> _lines;
 float[] _point = new float[2];
 int _color = FG_COLOR; // line or point color
 int _colorChange = 2; // amount to change each tick for pulse
@@ -17,14 +18,8 @@ void setup() {
   noFill();
   stroke(FG_COLOR);
   
+  _events = new EventQueue(); // initialize
   _lines = new ArrayList(); // initialize
-  
-  // test lines
-  LineSegment l1 = new LineSegment(10, 100, 300, 300);
-//  LineSegment l2 = new LineSegment(300, 150, 50, 150);
-  _lines.add(l1);
-//  _lines.add(l2);
-  
   _point[0] = -1; // waiting for input for first point
 }
 
@@ -36,7 +31,7 @@ void draw() {
   background(214, 209, 203);
   stroke(FG_COLOR);
   
-  // draw lines in _lines ArrayList
+  // draw line segments
   for (int i = 0; i < _lines.size(); i++) {
     LineSegment l = _lines.get(i);
     float[] start = l.start();
@@ -67,6 +62,10 @@ void draw() {
   }
 }
 
+void handleEvent(float[] event) {
+  
+}
+
 void mouseClicked() {
   if (mouseButton == LEFT) {
     if (_point[0] == -1) { // waiting for first point
@@ -77,10 +76,21 @@ void mouseClicked() {
     else {
       // create a new line from start and end points
       LineSegment l = new LineSegment(_point[0], _point[1], mouseX, 400 - mouseY);
+      
+      _events.insert(l);
       _lines.add(l);
       _point[0] = -1; // waiting for new start point
     }
   }
+  if (mouseButton == RIGHT) { // run algorithm
+    _events.remove();
+    while (!_events.empty()) {
+      float[] nextEvent = _events.remove();
+      handleEvent(nextEvent);
+    }
+    _lines.clear();
+  }
+  println("Size: " + _events.size());
 }
 
 void pulseColor() { // increase and decrease color value
