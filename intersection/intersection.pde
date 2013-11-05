@@ -31,22 +31,28 @@ void draw() {
   background(214, 209, 203);
   stroke(FG_COLOR);
   
-  // draw line segments
-  for (int i = 0; i < _lines.size(); i++) {
-    LineSegment l = _lines.get(i);
-    float[] start = l.start();
-    float[] end = l.end();
-    
-    line(start[0], start[1], end[0], end[1]); // line segment
-    
-    float[] p = l.findIntersect(mouseX);
-    if (l.includes(p[0], p[1]))
-      ellipse(p[0], p[1], 4, 4);
-  }
-  
   // vertical sweep line
   stroke(RED);
   line(mouseX, 0, mouseX, 400);
+  
+  // draw line segments
+  for (int i = 0; i < _lines.size(); i++) {
+    LineSegment l = _lines.get(i);
+    
+    float[] start = l.start();
+    float[] end = l.end();
+    
+    float[] p = l.findIntersect(mouseX);
+    boolean intersect = (l.includes(p[0], p[1]));
+    if (intersect) {
+      stroke(FG_COLOR);
+      ellipse(p[0], p[1], 2, 2);
+    }
+    else
+      stroke(BLUE);
+    
+    line(start[0], start[1], end[0], end[1]); // line segment
+  }
   
   pulseColor();
   if (_point[0] != -1)

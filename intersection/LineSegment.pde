@@ -3,6 +3,7 @@
 class LineSegment {
   float[] _start = new float[2]; // coordinate of start location
   float[] _end = new float[2]; // coordinate of end location
+  boolean _marked = false;
   
   LineSegment(float x1, float y1, float x2, float y2) {
     // start point is to left of end point
@@ -44,9 +45,17 @@ class LineSegment {
   }
   
   boolean includes(float x, float y) {
-    if ((x > _start[0] && x < _end[0] && y > _start[1] && y < _end[1])
-        || (x > _start[0] && x < _end[0] && y > _end[1] && y < _start[1]))
+    if ((x >= _start[0] && x <= _end[0] && y >= _start[1] && y <= _end[1])
+        || (x >= _start[0] && x <= _end[0] && y >= _end[1] && y <= _start[1]))
       return true;
     return false;
+  }
+  
+  void mark() {
+    _marked = true;
+  }
+  
+  boolean isMarked() {
+    return _marked;
   }
 }
