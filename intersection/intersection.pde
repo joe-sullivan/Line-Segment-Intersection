@@ -3,8 +3,8 @@ final color RED = color(217,107,114);
 final color BLUE = color(148,164,181);
 
 boolean _debug = true;
-EventQueue _events; // holds events and line segements
-ArrayList<LineSegment> _lines;
+BSTree _events; // holds events and line segements
+//ArrayList<LineSegment> _lines;
 float[] _point = new float[2];
 int _color = FG_COLOR; // line or point color
 int _colorChange = 2; // amount to change each tick for pulse
@@ -18,8 +18,8 @@ void setup() {
   noFill();
   stroke(FG_COLOR);
   
-  _events = new EventQueue(); // initialize
-  _lines = new ArrayList(); // initialize
+  _events = new BSTree(); // initialize
+//  _lines = new ArrayList(); // initialize
   _point[0] = -1; // waiting for input for first point
 }
 
@@ -36,8 +36,9 @@ void draw() {
   line(mouseX, 0, mouseX, 400);
   
   // draw line segments
-  for (int i = 0; i < _lines.size(); i++) {
-    LineSegment l = _lines.get(i);
+  ArrayList<LineSegment> lines = _events.getLines();
+  for (int i = 0; i < lines.size(); i++) {
+    LineSegment l = lines.get(i);
     
     float[] start = l.start();
     float[] end = l.end();
@@ -84,7 +85,7 @@ void mouseClicked() {
       LineSegment l = new LineSegment(_point[0], _point[1], mouseX, 400 - mouseY);
       
       _events.insert(l);
-      _lines.add(l);
+//      _lines.add(l);
       _point[0] = -1; // waiting for new start point
     }
   }
@@ -94,9 +95,10 @@ void mouseClicked() {
       float[] nextEvent = _events.remove();
       handleEvent(nextEvent);
     }
-    _lines.clear();
+//    _lines.clear();
   }
   println("Size: " + _events.size());
+  println("Size of line seg: " + _events.getLines().size());
 }
 
 void pulseColor() { // increase and decrease color value

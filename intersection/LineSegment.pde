@@ -44,6 +44,15 @@ class LineSegment {
     return point;
   }
   
+  float[] findIntersect(float x, float y, float m) {
+    // find intersection point of this segment and input line
+    // does not work yet
+    float b = _start[1] - (m * _start[0]);
+    x = (y - b) / m;
+    float[] point = {x, y};
+    return point;
+  }
+  
   boolean includes(float x, float y) {
     if ((x >= _start[0] && x <= _end[0] && y >= _start[1] && y <= _end[1])
         || (x >= _start[0] && x <= _end[0] && y >= _end[1] && y <= _start[1]))
