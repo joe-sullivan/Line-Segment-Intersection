@@ -3,8 +3,9 @@ final color RED = color(217,107,114);
 final color BLUE = color(148,164,181);
 
 boolean _debug = true;
-BSTree _events; // holds events and line segements
-//ArrayList<LineSegment> _lines;
+BSTree _lines; // holds events and line segements
+BSTree _status;
+PriorityQueue _events;
 float[] _point = new float[2];
 int _color = FG_COLOR; // line or point color
 int _colorChange = 2; // amount to change each tick for pulse
@@ -18,8 +19,9 @@ void setup() {
   noFill();
   stroke(FG_COLOR);
   
-  _events = new BSTree(); // initialize
-//  _lines = new ArrayList(); // initialize
+  _lines = new BSTree(); // initialize
+  _status = new BSTree();
+  _events = new PriorityQueue();
   _point[0] = -1; // waiting for input for first point
 }
 
@@ -32,20 +34,19 @@ void draw() {
   stroke(FG_COLOR);
   
   // vertical sweep line
+  LineSegment sweepLine = new LineSegment(mouseX, 0, mouseX, 400);
   stroke(RED);
   line(mouseX, 0, mouseX, 400);
   
   // draw line segments
-  ArrayList<LineSegment> lines = _events.getLines();
-  for (int i = 0; i < lines.size(); i++) {
-    LineSegment l = lines.get(i);
+  for (int i = 0; i < _lines.size(); i++) {
+    LineSegment l = _lines.get(i);
     
     float[] start = l.start();
     float[] end = l.end();
     
-    float[] p = l.findIntersect(mouseX);
-    boolean intersect = (l.includes(p[0], p[1]));
-    if (intersect) {
+    float[] p = l.findIntersect(sweepLine);
+    if (l.includes(p[0], p[1])) {
       stroke(FG_COLOR);
       ellipse(p[0], p[1], 2, 2);
     }
@@ -84,21 +85,18 @@ void mouseClicked() {
       // create a new line from start and end points
       LineSegment l = new LineSegment(_point[0], _point[1], mouseX, 400 - mouseY);
       
-      _events.insert(l);
-//      _lines.add(l);
+      _lines.insert(l);
       _point[0] = -1; // waiting for new start point
     }
   }
   if (mouseButton == RIGHT) { // run algorithm
-    _events.remove();
-    while (!_events.empty()) {
-      float[] nextEvent = _events.remove();
-      handleEvent(nextEvent);
-    }
-//    _lines.clear();
+    _lines.remove(_lines.get(0));
+//    while (!_lines.empty()) {
+//      float[] nextEvent = _lines.remove();
+//      handleEvent(nextEvent);
+//    }
   }
-  println("Size: " + _events.size());
-  println("Size of line seg: " + _events.getLines().size());
+  println("Size: " + _lines.size());
 }
 
 void pulseColor() { // increase and decrease color value
