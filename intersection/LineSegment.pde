@@ -35,20 +35,13 @@ class LineSegment {
     return slope;
   }
   
-  float[] findIntersect(float x) {
+  float[] findIntersect(LineSegment ls) {
+    float x = ls._start[0];
     float m = slope();
     float b = _start[1] - (m * _start[0]);
     float y = (m * x) + b;
-    x = (y - b) / m;
-    float[] point = {x, y};
-    return point;
-  }
-  
-  float[] findIntersect(float x, float y, float m) {
-    // find intersection point of this segment and input line
-    // does not work yet
-    float b = _start[1] - (m * _start[0]);
-    x = (y - b) / m;
+    if (m != 0) // horizontal line
+      x = (y - b) / m;
     float[] point = {x, y};
     return point;
   }

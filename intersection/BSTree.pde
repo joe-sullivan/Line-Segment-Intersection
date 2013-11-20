@@ -1,96 +1,150 @@
-// binary search tree
+// binary search tree to store line segments
+
+final int L = -1;
+final int R = 1;
 
 class BSTree {
-  int _size;
-  Node _root;
-  ArrayList<LineSegment> _lines;
-  boolean _newLine;
+  private int _size;
+  private Node _root;
+  private ArrayList<LineSegment> _lines;
+  private boolean _newLine;
   
   BSTree() {
     _size = 0;
     _lines = new ArrayList();
-//    _newLines = false;
   }
   
   boolean insert(LineSegment l) {
-//    boolean inserted;
-    _newLine = insert(l.start(), null, _root, 0); // line segment stored in end node
-    _newLine = _newLine && insert(l.end(), l, _root, 0);
-//    _newLine = true;
-//    if (_newLine)
-//      _lines.add(l);
+    _newLine = insert(l, _root, 0); // insert line
     return _newLine;
   }
   
-  private boolean insert(float[] e, LineSegment ls, Node pn, int depth) {
+  private boolean insert(LineSegment ls, Node pn, int depth) {
     if (empty()) {
-      _root = new Node(e, null);
+      _root = new Node(ls);
       _size++; 
     }
     else {
-      float x = e[0];
-      float y = e[1];
-      
-      float[] pe = pn.event; // parent node event
-      if (x < pe[0] || (x == pe[0] && y < pe[1])) { // event goes left
-        if (pn.hasLeftChild()) // recurse
-          insert(e, ls, pn.left, depth + 1);
+      int comp = pn.compareH(ls);
+      if (comp == L) {
+        if (pn.hasLeft()) // recurse
+          insert(ls, pn.left, depth + 1);
         else { // leaf
           _size++;
-          Node n = new Node(e, ls);
-          n.setParent(pn);
-          pn.setLeft(n);
+          Node n = new Node(ls);
+          n.parent = pn;
+          pn.left = n;
         }
       }
-      if (x > pe[0] || (x == pe[0] && y > pe[1])) { // event goes right
-        if (pn.hasRightChild()) // recurse
-          insert(e, ls, pn.right, depth + 1);
+      if (comp == R) {
+        if (pn.hasRight()) // recurse
+          insert(ls, pn.right, depth + 1);
         else { // leaf
           _size++;
-          Node n = new Node(e, ls);
-          n.setParent(pn);
-          pn.setRight(n);
+          Node n = new Node(ls);
+          n.parent = pn;
+          pn.right = n;
         }
       }
-      if ((x == pe[0]) && (y == pe[1])) { // event already exists in tree
+      if (comp == 0) { // node already exists in tree
         // do nothing
-//        _newLines = false;
         return false;
       }
     }
     return true;
   }
   
-  float[] remove() { // get leftmost event
-    Node n = _root;
-    _newLine = true;
-    if (!empty()) {
-      while (n.hasLeftChild()) {
-        n = n.left;
+  boolean remove(LineSegment l) {
+    if (!empty())
+      _newLine = remove(l, _root);
+    else
+      _newLine = false;
+    return _newLine;
+  }
+  
+  private boolean remove(LineSegment l, Node n) {
+      int comp = n.compareH(l);
+      if (comp == L) {
+        if (n.hasLeft()) // recurse
+          remove(l, n.left);
+        else
+          return false;
       }
-      if (n.isRoot()) {
-        _root = n.right; // new root
+      if (comp == R) {
+        if (n.hasRight()) // recurse
+          remove(l, n.right);
+        else
+          return false;
       }
-      else
-        n.parent.left = n.right; // update parent
+      if (comp == 0) { // remove
+        comp = n.parent.compareH(l);
+        if (comp == L) {
+          if (n.hasLeft()) {
+            n.parent.left =  n.left;
+            n.left.parent = n.parent;
+            if (n.hasRight()) {
+              Node leftmost = findLeft(n.right);
+              leftmost.left = n.left.right;
+              n.left.parent = leftmost;
+            }
+            n.left.right = n.right;
+            n.right.parent = n.left;
+          }
+          else {
+            if (n.hasRight()) {
+              n.parent.right = n.right;
+              n.right.parent = n.parent;
+            }
+          }
+        }
+        if (comp == R) {
+          if (n.hasLeft()) {
+            n.parent.right =  n.left;
+            n.left.parent = n.parent;
+            if (n.hasRight()) {
+              Node leftmost = findLeft(n.right);
+              leftmost.left = n.left.right;
+              n.left.parent = leftmost;
+            }
+            n.left.right = n.right;
+            n.right.parent = n.left;
+          }
+          else {
+            if (n.hasRight()) {
+              n.parent.right = n.right;
+              n.right.parent = n.parent;
+            }
+          }
+        }
+        if (comp == 0) { // root
+          if (n.hasRight()) {
+            Node leftmost = findLeft(n.right);
+            _root = leftmost;
+            _root.parent = null;
+            _root.right = n.right;
+            n.right.parent = _root;
+            if (n.hasLeft()) {
+              _root.left = n.left;
+              n.left.parent = _root;
+            }
+          }
+          else {
+            if (n.hasLeft()) {
+              _root = n.left;
+              n.left.parent = null;
+            }
+          }
+        }
+      }
       _size--;
-      
-//      for (int i = 0; i < _lines.size(); i++) { // find line to remove
-//        LineSegment l = _lines.get(i);
-//        boolean remove;
-//        float[] e = l.start();
-//        if (e[0] == n.event[0] && e[1] == n.event[1])
-//          remove = true;
-//        e = l.end();
-//        if (e[0] == n.event[0] && e[1] == n.event[1])
-//          remove = true;
-//        if (remove)
-//          _lines.remove(i);
-//      }
-      
-      return n.event;
+      return true;
+  }
+  
+  private Node findLeft(Node n) {
+    while (n.hasLeft()) {
+      n = n.left;
     }
-    return null;
+    return n;
   }
   
   int size() {
@@ -99,6 +153,12 @@ class BSTree {
   
   boolean empty() {
     return (_size == 0);
+  }
+  
+  LineSegment get(int i) {
+    if (_newLine)
+      getLines();
+    return _lines.get(i);
   }
 
   ArrayList<LineSegment> getLines() { // return ArrayList of lines (used for drawing)
@@ -112,43 +172,25 @@ class BSTree {
   }
   
   private void visitNodes(Node n) {
-    if (n.hasLeftChild()) // left child
+    if (n.hasLeft()) // left child
       visitNodes(n.left);
     
     // between left and right to keep ordered  
-    if (n.isEnd)
-      _lines.add(n.ls);
+    _lines.add(n.ls);
     
-    if (n.hasRightChild()) // right child
+    if (n.hasRight()) // right child
       visitNodes(n.right);
   }
 }
 
 private class Node {
-  boolean isEnd;
   LineSegment ls;
-  float[] event = new float[2];
   Node parent;
   Node left;
   Node right;
   
-  Node(float[] e, LineSegment lineSegment) {
-    event[0] = e[0];
-    event[1] = e[1];
+  Node(LineSegment lineSegment) {
     ls = lineSegment;
-    isEnd = (lineSegment != null);
-  }
-  
-  void setParent(Node n) {
-    parent = n;
-  }
-  
-  void setLeft(Node n) {
-    left = n;
-  }
-  
-  void setRight(Node n) {
-    right = n;
   }
   
   boolean isRoot() {
@@ -159,11 +201,36 @@ private class Node {
     return (left != null || right != null);
   }
   
-  boolean hasLeftChild() {
+  boolean hasLeft() {
     return (left != null);
   }
   
-  boolean hasRightChild() {
+  boolean hasRight() {
     return (right != null);
   }
+
+  int compareH(LineSegment l) { // left to right
+    float x = ls._start[0];
+    float y = ls._start[1];
+
+    float[] p = l._start; // parent node event
+    if (x < p[0] || (x == p[0] && y < p[1]))
+      return L;
+    if (x > p[0] || (x == p[0] && y > p[1]))
+      return R;
+    return 0;
+  }
+  
+  int compareV(LineSegment l) { // top to bottom
+    float x = ls._start[0];
+    float y = ls._start[1];
+
+    float[] p = l._start; // parent node event
+    if (y < p[1] || (y == p[1] && x < p[0]))
+      return R;
+    if (y > p[1] || (y == p[1] && x > p[0]))
+      return L;
+    return 0;
+  }
 }
+
