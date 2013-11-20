@@ -1,25 +1,18 @@
-// binary search tree
+// event queue (binary search tree)
 
-class BSTree {
+class EventQueue {
   int _size;
   Node _root;
-  ArrayList<LineSegment> _lines;
-  boolean _newLine;
   
-  BSTree() {
+  EventQueue() {
     _size = 0;
-    _lines = new ArrayList();
-//    _newLines = false;
   }
   
   boolean insert(LineSegment l) {
-//    boolean inserted;
-    _newLine = insert(l.start(), null, _root, 0); // line segment stored in end node
-    _newLine = _newLine && insert(l.end(), l, _root, 0);
-//    _newLine = true;
-//    if (_newLine)
-//      _lines.add(l);
-    return _newLine;
+    boolean inserted;
+    inserted = insert(l.start(), l, _root, 0);
+    inserted = inserted && insert(l.end(), l, _root, 0);
+    return inserted;
   }
   
   private boolean insert(float[] e, LineSegment ls, Node pn, int depth) {
@@ -54,7 +47,6 @@ class BSTree {
       }
       if ((x == pe[0]) && (y == pe[1])) { // event already exists in tree
         // do nothing
-//        _newLines = false;
         return false;
       }
     }
@@ -63,7 +55,6 @@ class BSTree {
   
   float[] remove() { // get leftmost event
     Node n = _root;
-    _newLine = true;
     if (!empty()) {
       while (n.hasLeftChild()) {
         n = n.left;
@@ -74,19 +65,6 @@ class BSTree {
       else
         n.parent.left = n.right; // update parent
       _size--;
-      
-//      for (int i = 0; i < _lines.size(); i++) { // find line to remove
-//        LineSegment l = _lines.get(i);
-//        boolean remove;
-//        float[] e = l.start();
-//        if (e[0] == n.event[0] && e[1] == n.event[1])
-//          remove = true;
-//        e = l.end();
-//        if (e[0] == n.event[0] && e[1] == n.event[1])
-//          remove = true;
-//        if (remove)
-//          _lines.remove(i);
-//      }
       
       return n.event;
     }
@@ -99,28 +77,6 @@ class BSTree {
   
   boolean empty() {
     return (_size == 0);
-  }
-
-  ArrayList<LineSegment> getLines() { // return ArrayList of lines (used for drawing)
-    if (_newLine) {
-      _lines.clear();
-      if (!empty())
-        visitNodes(_root);
-    }
-    
-    return _lines;
-  }
-  
-  private void visitNodes(Node n) {
-    if (n.hasLeftChild()) // left child
-      visitNodes(n.left);
-    
-    // between left and right to keep ordered  
-    if (n.isEnd)
-      _lines.add(n.ls);
-    
-    if (n.hasRightChild()) // right child
-      visitNodes(n.right);
   }
 }
 
