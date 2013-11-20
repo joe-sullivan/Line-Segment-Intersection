@@ -8,27 +8,27 @@ class BSTree {
   private Node _root;
   private ArrayList<LineSegment> _lines;
   private boolean _newLine;
-  
+
   BSTree() {
     _size = 0;
     _lines = new ArrayList();
   }
-  
+
   boolean insert(LineSegment l) {
-    _newLine = insert(l, _root, 0); // insert line
+    _newLine = insert(l, _root); // insert line
     return _newLine;
   }
-  
-  private boolean insert(LineSegment ls, Node pn, int depth) {
+
+  private boolean insert(LineSegment ls, Node pn) {
     if (empty()) {
       _root = new Node(ls);
-      _size++; 
+      _size++;
     }
     else {
       int comp = pn.compareH(ls);
       if (comp == L) {
         if (pn.hasLeft()) // recurse
-          insert(ls, pn.left, depth + 1);
+          insert(ls, pn.left);
         else { // leaf
           _size++;
           Node n = new Node(ls);
@@ -38,7 +38,7 @@ class BSTree {
       }
       if (comp == R) {
         if (pn.hasRight()) // recurse
-          insert(ls, pn.right, depth + 1);
+          insert(ls, pn.right);
         else { // leaf
           _size++;
           Node n = new Node(ls);
@@ -53,7 +53,7 @@ class BSTree {
     }
     return true;
   }
-  
+
   boolean remove(LineSegment l) {
     if (!empty())
       _newLine = remove(l, _root);
@@ -61,100 +61,85 @@ class BSTree {
       _newLine = false;
     return _newLine;
   }
-  
+
   private boolean remove(LineSegment l, Node n) {
-      int comp = n.compareH(l);
+    int comp = n.compareH(l);
+    if (comp != 0) { // keep searching
       if (comp == L) {
         if (n.hasLeft()) // recurse
-          remove(l, n.left);
-        else
-          return false;
+          return remove(l, n.left);
       }
       if (comp == R) {
         if (n.hasRight()) // recurse
-          remove(l, n.right);
-        else
-          return false;
+          return remove(l, n.right);
       }
-      if (comp == 0) { // remove
+      return false;
+    }
+    else { // remove
+      if (!n.isRoot())
         comp = n.parent.compareH(l);
-        if (comp == L) {
-          if (n.hasLeft()) {
-            n.parent.left =  n.left;
-            n.left.parent = n.parent;
-            if (n.hasRight()) {
-              Node leftmost = findLeft(n.right);
-              leftmost.left = n.left.right;
-              n.left.parent = leftmost;
-            }
-            n.left.right = n.right;
-            n.right.parent = n.left;
-          }
-          else {
-            if (n.hasRight()) {
-              n.parent.right = n.right;
-              n.right.parent = n.parent;
-            }
-          }
+      if (n.hasLeft() && n.hasRight()) {
+        Node min = findLeft(n.right);
+        n.ls = min.ls;
+        min.parent.left = null;
+      }
+      else if (n.hasLeft()) {
+        if (!n.isRoot()) {
+          if (comp == L)
+            n.parent.left = n.left;
+          else
+            n.parent.right = n.left;
+          n.left.parent = n.parent;
         }
-        if (comp == R) {
-          if (n.hasLeft()) {
-            n.parent.right =  n.left;
-            n.left.parent = n.parent;
-            if (n.hasRight()) {
-              Node leftmost = findLeft(n.right);
-              leftmost.left = n.left.right;
-              n.left.parent = leftmost;
-            }
-            n.left.right = n.right;
-            n.right.parent = n.left;
-          }
-          else {
-            if (n.hasRight()) {
-              n.parent.right = n.right;
-              n.right.parent = n.parent;
-            }
-          }
-        }
-        if (comp == 0) { // root
-          if (n.hasRight()) {
-            Node leftmost = findLeft(n.right);
-            _root = leftmost;
-            _root.parent = null;
-            _root.right = n.right;
-            n.right.parent = _root;
-            if (n.hasLeft()) {
-              _root.left = n.left;
-              n.left.parent = _root;
-            }
-          }
-          else {
-            if (n.hasLeft()) {
-              _root = n.left;
-              n.left.parent = null;
-            }
-          }
+        else {
+          _root = n.left;
+          n.left.parent = null;
         }
       }
+      else if (n.hasRight()) {
+        if (!n.isRoot()) {
+          if (comp == L)
+            n.parent.left = n.right;
+          else
+            n.parent.right = n.right;
+          n.right.parent = n.parent;
+        }
+        else {
+          _root = n.right;
+          n.right.parent = null;
+        }
+      }
+      else { // leaf
+        if (!n.isRoot()) {
+          if (comp == L)
+            n.parent.left = null;
+          else
+            n.parent.right = null;
+        }
+        else
+          _root = null;
+      }
+
       _size--;
       return true;
+    }
   }
-  
+
   private Node findLeft(Node n) {
-    while (n.hasLeft()) {
+    while (n.hasLeft ()) {
       n = n.left;
     }
     return n;
   }
-  
+
   int size() {
     return _size;
   }
-  
+
   boolean empty() {
     return (_size == 0);
   }
-  
+
   LineSegment get(int i) {
     if (_newLine)
       getLines();
@@ -167,19 +152,19 @@ class BSTree {
       if (!empty())
         visitNodes(_root);
     }
-    
+
     return _lines;
   }
-  
+
   private void visitNodes(Node n) {
-    if (n.hasLeft()) // left child
-      visitNodes(n.left);
-    
+    if (n.hasRight()) // right child
+      visitNodes(n.right);
+
     // between left and right to keep ordered  
     _lines.add(n.ls);
     
-    if (n.hasRight()) // right child
-      visitNodes(n.right);
+    if (n.hasLeft()) // left child
+      visitNodes(n.left);
   }
 }
 
@@ -188,23 +173,19 @@ private class Node {
   Node parent;
   Node left;
   Node right;
-  
+
   Node(LineSegment lineSegment) {
     ls = lineSegment;
   }
-  
+
   boolean isRoot() {
     return (parent == null);
   }
-  
-  boolean hasChild() {
-    return (left != null || right != null);
-  }
-  
+
   boolean hasLeft() {
     return (left != null);
   }
-  
+
   boolean hasRight() {
     return (right != null);
   }
@@ -220,7 +201,7 @@ private class Node {
       return R;
     return 0;
   }
-  
+
   int compareV(LineSegment l) { // top to bottom
     float x = ls._start[0];
     float y = ls._start[1];
@@ -233,4 +214,3 @@ private class Node {
     return 0;
   }
 }
-
