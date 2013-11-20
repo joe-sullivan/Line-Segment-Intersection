@@ -98,7 +98,6 @@ void mouseClicked() {
   }
   if (_debug) {
     println("Size: " + _lineSegs.size());
-    println("X: " + _point[0] + " | Y: " + _point[1]);
   }
 }
 
