@@ -1,11 +1,12 @@
 final int FG_COLOR = 85;
-final color RED = color(217,107,114);
-final color BLUE = color(148,164,181);
+final color RED = color(217, 107, 114);
+final color BLUE = color(148, 164, 181);
 
 boolean _debug = true;
 BSTree _lineSegs; // holds events and line segements
 BSTree _status;
 PriorityQueue _events;
+LineSegment _sweep;
 float[] _point = new float[2];
 int _color = FG_COLOR; // line or point color
 int _colorChange = 2; // amount to change each tick for pulse
@@ -13,52 +14,55 @@ int _colorChange = 2; // amount to change each tick for pulse
 void setup() {
   size(400, 400);
   background(214, 209, 203);
-  
+
   fill(FG_COLOR);
   noFill();
   stroke(FG_COLOR);
-  
+
   _lineSegs = new BSTree(); // initialize
   _status = new BSTree();
   _events = new PriorityQueue();
   _point[0] = -1; // waiting for input for first point
+  _sweep = new LineSegment(0, 0, 0, 400);
 }
 
 void draw() {
   // flip y axis
   scale(1, -1);
   translate(0, -height);
-  
+
   background(214, 209, 203);
   stroke(FG_COLOR);
-  
+
   // vertical sweep line
-  LineSegment sweepLine = new LineSegment(mouseX, 0, mouseX, 400);
+//  _sweep = new LineSegment(mouseX, 0, mouseX, 400);
   stroke(RED);
-  line(mouseX, 0, mouseX, 400);
-  
+  float[] s = _sweep.start();
+  float[] e = _sweep.end();
+  line(s[0], s[1], e[0], e[1]);
+
   // draw line segments
   for (int i = 0; i < _lineSegs.size(); i++) {
     LineSegment l = _lineSegs.get(i);
-    
+
     float[] start = l.start();
     float[] end = l.end();
-    
-    float[] p = l.findIntersect(sweepLine);
+
+    float[] p = l.findIntersect(_sweep);
     if (l.includes(p[0], p[1])) {
       stroke(FG_COLOR);
       ellipse(p[0], p[1], 2, 2);
     }
     else
       stroke(BLUE);
-    
+
     line(start[0], start[1], end[0], end[1]); // line segment
   }
-  
+
   pulseColor();
   if (_point[0] != -1)
     ellipse(_point[0], _point[1], 4, 4); // first point in new line segment
-    
+
   // text
   if (_debug) {
     scale(1, -1);
@@ -69,8 +73,42 @@ void draw() {
   }
 }
 
-void handleEvent(float[] event) {
+void handleEvent(Point event) {
   
+}
+
+void go() { // run algorithm
+  // add enpoints to queue
+  for (int i = 0; i < _lineSegs.size(); i++) {
+    LineSegment l = _lineSegs.get(i);
+    Point endpt = new Point(l.start()[0], l.start()[1], START);
+    Point startpt = new Point(l.end()[0], l.end()[1], END);
+    _events.insert(startpt);
+    _events.insert(endpt);
+  }
+  
+  while (!_events.empty()) {
+    Point e = _events.remove();
+    if (e.type() == START) {
+     
+    }
+    if (e.type() == END) {
+      
+    }
+    if (e.type() == INTERSECTION) {
+      
+    } 
+
+  }
+  
+  _point[0] = -1;
+  _point[1] = -1;
+//  _lineSegs.remove(_lineSegs.get(0));
+  //    for (int i = 0; i < _lineSegs.size(); i++) {
+  //      LineSegment ls = _lineSegs.get(i);
+  //      _status.insert(ls);
+  //      handleEvent(nextEvent);
+  //    }
 }
 
 void mouseClicked() {
@@ -87,15 +125,8 @@ void mouseClicked() {
       _point[0] = -1; // waiting for new start point
     }
   }
-  if (mouseButton == RIGHT) { // run algorithm
-    _point[0] = -1;
-    _point[1] = -1;
-    _lineSegs.remove(_lineSegs.get(0));
-//    while (!_lineSegs.empty()) {
-//      float[] nextEvent = _lineSegs.remove();
-//      handleEvent(nextEvent);
-//    }
-  }
+  if (mouseButton == RIGHT)
+    go();
   if (_debug) {
     println("Size: " + _lineSegs.size());
   }
@@ -110,3 +141,4 @@ void pulseColor() { // increase and decrease color value
   _color += _colorChange; // change color
   stroke(_color);
 }
+

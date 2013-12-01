@@ -1,15 +1,32 @@
 // priority queue for storing events
 
 class PriorityQueue {
-  private ArrayList<float[]> _points;
+  private ArrayList<Point> _points;
   
   PriorityQueue() {
     _points = new ArrayList();
   }
   
-  void insert(float[] event) {
-    _points.add(event);
+  void insert(Point p) {
+    _points.add(p);
     heapify(_points.size()-1);
+  }
+  
+  Point peek() {
+    if (!empty())
+      return _points.get(0);
+    else
+      return null;
+  }
+  
+  Point remove() {
+    if (!empty()) {
+      Point p = _points.get(0);
+      _points.remove(0);
+      return p;
+    }
+    else
+      return null;
   }
   
   private void heapify(int id) {
@@ -35,12 +52,14 @@ class PriorityQueue {
   }
   
   private void swap(int p, int id) {
-    float[] tmp = _points.get(id);
+    Point tmp = _points.get(id);
     _points.add(id, _points.get(p));
     _points.add(p, tmp);
   }
   
-  private boolean compare(float[] e, float[] p) {
+  private boolean compare(Point evt, Point pnt) {
+    float[] e = evt.getPoint();
+    float[] p = pnt.getPoint();
      if (e[0] < p[0] || (e[0] == p[0] && e[1] < p[1]))
       return false;
     return true;
