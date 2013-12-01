@@ -8,10 +8,12 @@ class BSTree {
   private Node _root;
   private ArrayList<LineSegment> _lines;
   private boolean _newLine;
-
-  BSTree() {
+  private boolean _isStatus;
+  
+  BSTree(boolean isStatus) {
     _size = 0;
     _lines = new ArrayList();
+    _isStatus = isStatus;
   }
 
   boolean insert(LineSegment l) {
@@ -25,7 +27,11 @@ class BSTree {
       _size++;
     }
     else {
-      int comp = pn.compareH(ls);
+      int comp;
+      if (_isStatus)
+        comp = pn.compareH(ls);
+      else
+        comp = pn.compareV(ls);
       if (comp == L) {
         if (pn.hasLeft()) // recurse
           insert(ls, pn.left);
@@ -130,6 +136,31 @@ class BSTree {
       n = n.left;
     }
     return n;
+  }
+  
+  LineSegment[] findNeighbors(LineSegment l) {
+    LineSegment[] ls = new LineSegment[2];
+    if (!empty()) {
+      ls[0] = visitNeighbors(l, ls, _root, true);
+      ls[1] = visitNeighbors(l, ls, _root, false);
+    }
+    return ls;
+  }
+  
+  private LineSegment visitNeighbors(LineSegment l, LineSegment[] ls, Node n, boolean left) {
+    if (l.equals(n.ls)) {
+      if (left && n.hasLeft())
+          return n.left.ls;
+      if (!left && n.hasRight())
+          return n.right.ls;
+    }
+    else {
+      if (n.hasLeft()) // left child
+        visitNeighbors(l, ls, n.left, left);
+      if (n.hasRight()) // right child
+        visitNeighbors(l, ls, n.right, left);
+    }
+    return null;
   }
 
   int size() {

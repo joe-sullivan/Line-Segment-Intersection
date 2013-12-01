@@ -53,6 +53,13 @@ class LineSegment {
     return false;
   }
   
+  boolean equals(LineSegment ls) {
+    return !(_start[0] != ls.start()[0] ||
+        _start[1] != ls.start()[1] ||
+        _end[0] != ls.end()[0] ||
+        _end[1] != ls.end()[1]);
+  }
+  
   void mark() {
     _marked = true;
   }

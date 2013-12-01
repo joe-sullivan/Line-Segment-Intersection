@@ -4,8 +4,8 @@ final color BLUE = color(148, 164, 181);
 
 boolean _debug = true;
 BSTree _lineSegs; // holds events and line segements
-BSTree _status;
-PriorityQueue _events;
+BSTree _status; // lines currently intersecting sweep line
+PriorityQueue _events; // current and future stopping points
 LineSegment _sweep;
 float[] _point = new float[2];
 int _color = FG_COLOR; // line or point color
@@ -19,8 +19,8 @@ void setup() {
   noFill();
   stroke(FG_COLOR);
 
-  _lineSegs = new BSTree(); // initialize
-  _status = new BSTree();
+  _lineSegs = new BSTree(false); // initialize
+  _status = new BSTree(true);
   _events = new PriorityQueue();
   _point[0] = -1; // waiting for input for first point
   _sweep = new LineSegment(0, 0, 0, 400);
@@ -42,7 +42,7 @@ void draw() {
   line(s[0], s[1], e[0], e[1]);
 
   // draw line segments
-  for (int i = 0; i < _lineSegs.size(); i++) {
+  for (int i = 0; i < _lineSegs.size(); i++) { // draw all lines (blue)
     LineSegment l = _lineSegs.get(i);
 
     float[] start = l.start();
@@ -51,11 +51,18 @@ void draw() {
     float[] p = l.findIntersect(_sweep);
     if (l.includes(p[0], p[1])) {
       stroke(FG_COLOR);
-      ellipse(p[0], p[1], 2, 2);
+      ellipse(p[0], p[1], 2, 2); // intersect sweep line
     }
-    else
-      stroke(BLUE);
+    stroke(BLUE);
+    line(start[0], start[1], end[0], end[1]); // line segment
+  }
+  for (int i = 0; i < _status.size(); i++) { // draw lines in status (black)
+    LineSegment l = _status.get(i);
 
+    float[] start = l.start();
+    float[] end = l.end();
+
+    stroke(FG_COLOR);
     line(start[0], start[1], end[0], end[1]); // line segment
   }
 
@@ -73,42 +80,52 @@ void draw() {
   }
 }
 
-void handleEvent(Point event) {
-  
+void step() {
+  Point e = _events.remove();
+  _sweep._start[0] = _sweep._end[0] = e.getPoint()[0];
+  LineSegment ls = e.getLine();
+  LineSegment[] neighbors = _status.findNeighbors(ls);
+  LineSegment above = neighbors[0];
+  LineSegment below = neighbors[1];
+  if (e.type() == START) {
+    _status.insert(ls);
+    if (above != null && below != null) {
+      float[] pt = above.findIntersect(below);
+      if (above.includes(pt[0], pt[1]) && below.includes(pt[0], pt[1]))
+        _events.remove(pt);
+      pt = ls.findIntersect(above);
+      if (ls.includes(pt[0], pt[1]) && above.includes(pt[0], pt[1]))
+        _events.insert(new Point(pt[0], pt[1], INTERSECTION, null));
+      pt = ls.findIntersect(below);
+      if (ls.includes(pt[0], pt[1]) && below.includes(pt[0], pt[1]))
+        _events.insert(new Point(pt[0], pt[1], INTERSECTION, null));
+    }
+  }
+  if (e.type() == END) {
+    _status.remove(ls);
+    if (above != null && below != null) {
+      float[] pt = above.findIntersect(below);
+      if (above.includes(pt[0], pt[1]) && below.includes(pt[0], pt[1]))
+        _events.remove(pt);
+    }
+  }
+  if (e.type() == INTERSECTION) {
+    
+  }
 }
 
 void go() { // run algorithm
-  // add enpoints to queue
-  for (int i = 0; i < _lineSegs.size(); i++) {
-    LineSegment l = _lineSegs.get(i);
-    Point endpt = new Point(l.start()[0], l.start()[1], START);
-    Point startpt = new Point(l.end()[0], l.end()[1], END);
-    _events.insert(startpt);
-    _events.insert(endpt);
-  }
-  
   while (!_events.empty()) {
-    Point e = _events.remove();
-    if (e.type() == START) {
-     
-    }
-    if (e.type() == END) {
-      
-    }
-    if (e.type() == INTERSECTION) {
-      
-    } 
-
+    step();
   }
-  
   _point[0] = -1;
   _point[1] = -1;
 //  _lineSegs.remove(_lineSegs.get(0));
-  //    for (int i = 0; i < _lineSegs.size(); i++) {
-  //      LineSegment ls = _lineSegs.get(i);
-  //      _status.insert(ls);
-  //      handleEvent(nextEvent);
-  //    }
+//  for (int i = 0; i < _lineSegs.size(); i++) {
+//    LineSegment ls = _lineSegs.get(i);
+//    _status.insert(ls);
+//    handleEvent(nextEvent);
+//  }
 }
 
 void mouseClicked() {
@@ -125,8 +142,18 @@ void mouseClicked() {
       _point[0] = -1; // waiting for new start point
     }
   }
-  if (mouseButton == RIGHT)
-    go();
+  if (mouseButton == RIGHT) {
+    // add endpoints to queue
+    for (int i = 0; i < _lineSegs.size(); i++) {
+      LineSegment l = _lineSegs.get(i);
+      Point startpt = new Point(l.start()[0], l.start()[1], START, l);
+      Point endpt = new Point(l.end()[0], l.end()[1], END, l);
+      _events.insert(startpt);
+      _events.insert(endpt);
+    }
+//    go();
+    step();
+  }
   if (_debug) {
     println("Size: " + _lineSegs.size());
   }
@@ -141,4 +168,3 @@ void pulseColor() { // increase and decrease color value
   _color += _colorChange; // change color
   stroke(_color);
 }
-

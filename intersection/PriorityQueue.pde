@@ -29,6 +29,14 @@ class PriorityQueue {
       return null;
   }
   
+  void remove(float[] point) {
+    for (int i = 0; i < _points.size(); i++) {
+      float[] pt = _points.get(i).getPoint();
+      if (pt[0] == point[0] && pt[1] == point[1])
+        _points.remove(i);
+    }
+  }
+  
   private void heapify(int id) {
     while (id != 0) {
       int p = getParent(id);
