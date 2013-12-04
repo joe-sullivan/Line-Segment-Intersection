@@ -18,7 +18,6 @@ class LineSegment {
       _start[1] = y2;
       _end[0] = x1;
       _end[1] = y1;
-      
     }
   }
   
@@ -54,6 +53,8 @@ class LineSegment {
   }
   
   boolean equals(LineSegment ls) {
+    if (ls == null)
+      return false;
     return !(_start[0] != ls.start()[0] ||
         _start[1] != ls.start()[1] ||
         _end[0] != ls.end()[0] ||

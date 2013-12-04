@@ -138,43 +138,65 @@ class BSTree {
     return n;
   }
   
-  LineSegment[] findNeighbors(LineSegment l) {
-    LineSegment[] ls = new LineSegment[2];
-    if (!empty()) {
-      ls[0] = visitNeighbors(l, ls, _root, true);
-      ls[1] = visitNeighbors(l, ls, _root, false);
+//  LineSegment[] findNeighbors(LineSegment l) {
+//    LineSegment[] ls = new LineSegment[2];
+//    if (!empty()) {
+//      ls[0] = visitNeighbors(l, ls, _root, true);
+//      ls[1] = visitNeighbors(l, ls, _root, false);
+//    }
+//    return ls;
+//  }
+//  
+//  private LineSegment visitNeighbors(LineSegment l, LineSegment[] ls, Node n, boolean left) {
+//    if (l.equals(n.ls)) {
+//      if (left) {
+//        if (n.hasLeft())
+//          return n.left.ls;
+//        if (!n.isRoot()) {
+//          if (n == n.parent.right)
+//            return n.parent.ls;
+//        }
+//      }
+//      else { // right
+//        if (n.hasRight())
+//          return n.right.ls;
+//        if (!n.isRoot()) {
+//          if (n == n.parent.left)
+//            return n.parent.ls;
+//        }
+//      }
+//    }
+//    else {
+//      if (n.hasLeft()) // left child
+//        visitNeighbors(l, ls, n.left, left);
+//      if (n.hasRight()) // right child
+//        visitNeighbors(l, ls, n.right, left);
+//    }
+//    return null;
+//  }
+
+  void swap(LineSegment a, LineSegment b) {
+    if (size() > 1) {
+      Node n1 = findNode(a, _root);
+      Node n2 = findNode(b, _root);
+      LineSegment tmp = n1.ls;
+      n1.ls = n2.ls;
+      n2.ls = tmp;
     }
-    return ls;
   }
-  
-  private LineSegment visitNeighbors(LineSegment l, LineSegment[] ls, Node n, boolean left) {
-    if (l.equals(n.ls)) {
-      if (left) {
-        if (n.hasLeft())
-          return n.left.ls;
-        if (!n.isRoot()) {
-          if (n == n.parent.right)
-            return n.parent.ls;
-        }
-      }
-      else { // right
-        if (n.hasRight())
-          return n.right.ls;
-        if (!n.isRoot()) {
-          if (n == n.parent.left)
-            return n.parent.ls;
-        }
-      }
-    }
+
+  private Node findNode(LineSegment l, Node n) {
+    if (l.equals(n.ls))
+      return n;
     else {
       if (n.hasLeft()) // left child
-        visitNeighbors(l, ls, n.left, left);
+        findNode(l, n.left);
       if (n.hasRight()) // right child
-        visitNeighbors(l, ls, n.right, left);
+        findNode(l, n.right);
     }
     return null;
   }
-
+  
   int size() {
     return _size;
   }
