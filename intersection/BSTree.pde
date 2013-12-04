@@ -149,10 +149,22 @@ class BSTree {
   
   private LineSegment visitNeighbors(LineSegment l, LineSegment[] ls, Node n, boolean left) {
     if (l.equals(n.ls)) {
-      if (left && n.hasLeft())
+      if (left) {
+        if (n.hasLeft())
           return n.left.ls;
-      if (!left && n.hasRight())
+        if (!n.isRoot()) {
+          if (n == n.parent.right)
+            return n.parent.ls;
+        }
+      }
+      else { // right
+        if (n.hasRight())
           return n.right.ls;
+        if (!n.isRoot()) {
+          if (n == n.parent.left)
+            return n.parent.ls;
+        }
+      }
     }
     else {
       if (n.hasLeft()) // left child

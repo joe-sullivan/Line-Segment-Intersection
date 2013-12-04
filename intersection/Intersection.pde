@@ -2,11 +2,14 @@ final int FG_COLOR = 85;
 final color RED = color(217, 107, 114);
 final color BLUE = color(148, 164, 181);
 
-boolean _debug = true;
+boolean _debug = false;
 BSTree _lineSegs; // holds events and line segements
 BSTree _status; // lines currently intersecting sweep line
 PriorityQueue _events; // current and future stopping points
 LineSegment _sweep;
+LineSegment above;
+LineSegment below;
+LineSegment ls;
 float[] _point = new float[2];
 int _color = FG_COLOR; // line or point color
 int _colorChange = 2; // amount to change each tick for pulse
@@ -65,6 +68,26 @@ void draw() {
     stroke(FG_COLOR);
     line(start[0], start[1], end[0], end[1]); // line segment
   }
+  
+  // above, below, and current
+  if (above != null) {
+    stroke(0,255,0); // green
+    s = above.start();
+    e = above.end();
+    line(s[0], s[1], e[0], e[1]);
+  }
+  if (below != null) {
+    stroke(0,0,255); // blue
+    s = below.start();
+    e = below.end();
+    line(s[0], s[1], e[0], e[1]);
+  }
+  if (ls != null) {
+    stroke(255,0,0); // red
+    s = ls.start();
+    e = ls.end();
+    line(s[0], s[1], e[0], e[1]);
+  }
 
   pulseColor();
   if (_point[0] != -1)
@@ -81,24 +104,28 @@ void draw() {
 }
 
 void step() {
-  Point e = _events.remove();
+  println("STEP");
+  println("SIZEBEFORE" + _events.size());
+  Point e = _events.removeEvent();
+  println("SIZE" + _events.size());
+  _point = e.getPoint(); // used to show point being handled
   _sweep._start[0] = _sweep._end[0] = e.getPoint()[0];
-  LineSegment ls = e.getLine();
+  ls = e.getLine();
   LineSegment[] neighbors = _status.findNeighbors(ls);
-  LineSegment above = neighbors[0];
-  LineSegment below = neighbors[1];
+  above = neighbors[0];
+  below = neighbors[1];
   if (e.type() == START) {
     _status.insert(ls);
     if (above != null && below != null) {
       float[] pt = above.findIntersect(below);
       if (above.includes(pt[0], pt[1]) && below.includes(pt[0], pt[1]))
-        _events.remove(pt);
+        _events.removeEvent(pt);
       pt = ls.findIntersect(above);
       if (ls.includes(pt[0], pt[1]) && above.includes(pt[0], pt[1]))
-        _events.insert(new Point(pt[0], pt[1], INTERSECTION, null));
+        _events.addEvent(new Point(pt[0], pt[1], INTERSECTION, null));
       pt = ls.findIntersect(below);
       if (ls.includes(pt[0], pt[1]) && below.includes(pt[0], pt[1]))
-        _events.insert(new Point(pt[0], pt[1], INTERSECTION, null));
+        _events.addEvent(new Point(pt[0], pt[1], INTERSECTION, null));
     }
   }
   if (e.type() == END) {
@@ -106,7 +133,7 @@ void step() {
     if (above != null && below != null) {
       float[] pt = above.findIntersect(below);
       if (above.includes(pt[0], pt[1]) && below.includes(pt[0], pt[1]))
-        _events.remove(pt);
+        _events.removeEvent(pt);
     }
   }
   if (e.type() == INTERSECTION) {
@@ -139,24 +166,32 @@ void mouseClicked() {
       // create a new line from start and end points
       LineSegment l = new LineSegment(_point[0], _point[1], mouseX, 400 - mouseY);
       _lineSegs.insert(l);
+      println("NUM OF LINES: " + _lineSegs.size());
       _point[0] = -1; // waiting for new start point
     }
   }
   if (mouseButton == RIGHT) {
+    println("START ALG");
+      println("NUM OF LINES: " + _lineSegs.size());
     // add endpoints to queue
     for (int i = 0; i < _lineSegs.size(); i++) {
       LineSegment l = _lineSegs.get(i);
       Point startpt = new Point(l.start()[0], l.start()[1], START, l);
       Point endpt = new Point(l.end()[0], l.end()[1], END, l);
-      _events.insert(startpt);
-      _events.insert(endpt);
+      _events.addEvent(startpt);
+      _events.addEvent(endpt);
     }
 //    go();
-    step();
+//    step();
   }
   if (_debug) {
     println("Size: " + _lineSegs.size());
   }
+}
+
+void keyPressed() {
+//    go();
+    step();
 }
 
 void pulseColor() { // increase and decrease color value
