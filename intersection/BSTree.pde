@@ -179,9 +179,11 @@ class BSTree {
     if (size() > 1) {
       Node n1 = findNode(a, _root);
       Node n2 = findNode(b, _root);
-      LineSegment tmp = n1.ls;
-      n1.ls = n2.ls;
-      n2.ls = tmp;
+      if (n1 != null && n2 != null) {
+        LineSegment tmp = n1.ls;
+        n1.ls = n2.ls;
+        n2.ls = tmp;
+      }
     }
   }
 
