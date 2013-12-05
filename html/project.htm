@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Code</title>
+	<meta name='author' content='Joe Sullivan'>
+	<link rel="stylesheet" type="text/css" href="style.css" />
+	<script src="processing-1.4.1.js"></script>
+	<script src="codeInputs.js"></script>
+</head>
+
+<body>
+	<div id="container">
+		<div id="header">
+		</div>
+	
+		<div id="content">
+			<h1>Line Segment Intersection Using Sweepline</h1>
+				<div class="left">
+					<canvas id="sweep" data-processing-sources="code/intersection.pde"></canvas>
+					<center>
+						<input type="button" onclick="goRet('sweep')" value="Run"/>
+						<input type="button" onclick="nextStepRet('sweep')" value="Step"/>
+						<input type="button" onclick="reset('sweep')" value="Reset"/>
+						<input type="button" onclick="debug('sweep')" value="Debug"/>
+					</center>
+				</div>
+				<div class="right">
+					<p>
+						<u>HOW TO USE</u> <br>
+						<b>Run</b>: Finds all intersection points <br>
+						<b>Step</b>: Incrementally steps through algorithm <br>
+						<b>Reset</b>: Clears all line segments <br>
+						<b>Debug</b>: Toggles debug information <br>
+						<b>Red line</b>: Sweep line <br>
+						<b>Blue lines</b>: Default color <br>
+						<b>Black lines</b>: Lines intersecting the sweep line (in the status structure) <br>
+						<b>Orange lines</b>: Direct neighbors to the line segment(s) for the current event point <br>
+						<b>Small black dots</b>: Points of intersection with the sweep line <br>
+						<b>Red dots</b>: Found intersection points <br>
+						<b>Large black dot</b>: First point of a new line segment
+					</p>
+					<hr>
+					<label id="results">Points: </label>
+				</div>
+				<br style="clear:both;"/>
+    	</div>
+    	<div id="footer">
+			<ul>
+			  <li>Joe Sullivan and Sam Chen</li>
+			</ul>
+    	</div>
+	</div>
+</body>
+</html>
