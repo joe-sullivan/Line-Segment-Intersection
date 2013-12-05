@@ -1,4 +1,5 @@
 // priority queue for storing events
+// does not work properly yet
 
 class PriorityQueue {
   private ArrayList<Point> _points;
@@ -42,7 +43,7 @@ class PriorityQueue {
         min = left;
     }
     else {
-      if (compare(_points.get(right),_points.get(left)))
+      if (compare(_points.get(left),_points.get(right)))
         min = left;
       else
         min = right;
@@ -56,20 +57,18 @@ class PriorityQueue {
   void remove(float[] point) {
     for (int i = 0; i < _points.size(); i++) {
       float[] pt = _points.get(i).getPoint();
-      if (pt[0] == point[0] && pt[1] == point[1]){
+      if (pt[0] == point[0] && pt[1] == point[1])
         swap(i,_points.size()-1);
         _points.remove(_points.size()-1);
         siftDown(i);
-      }
     }
   }
   
   private void heapify(int id) {
     while (id != 0) {
       int p = getParent(id);
-      if (compare(_points.get(id), _points.get(p))){
+      if (compare(_points.get(id), _points.get(p)))
         break;
-      }
       swap(p, id);
       id = p;
     }
@@ -80,25 +79,26 @@ class PriorityQueue {
   }
   
   private int getLeft(int id) {
-    return ((2 * id) + 1);
+    return ((id + 1) * 2);
   }
   
   private int getRight(int id) {
-    return ((2 * id) + 2);
+    return ((id + 1) * 2) + 1;
   }
   
   private void swap(int p, int id) {
     Point tmp = _points.get(id);
-    _points.set(id, _points.get(p));
-    _points.set(p, tmp);
+    _points.add(id, _points.get(p));
+    _points.remove(id+1);
+    _points.add(p, tmp);
+    _points.remove(p+1);
   }
   
   private boolean compare(Point evt, Point pnt) {
     float[] e = evt.getPoint();
     float[] p = pnt.getPoint();
-    if (e[0] < p[0] || (e[0] == p[0] && e[1] < p[1])){
+     if (e[0] < p[0] || (e[0] == p[0] && e[1] < p[1]))
       return false;
-    }
     return true;
   }
   

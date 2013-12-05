@@ -43,7 +43,7 @@ void draw() {
   stroke(FG_COLOR);
 
   // vertical sweep line
-  // _sweep = new LineSegment(mouseX, 0, mouseX, 400);
+//  _sweep = new LineSegment(mouseX, 0, mouseX, 400);
   stroke(RED);
   float[] s = _sweep.start();
   float[] e = _sweep.end();
