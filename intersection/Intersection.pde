@@ -31,6 +31,7 @@ void setup() {
   _point[0] = -1; // waiting for input for first point
   _sweep = new LineSegment(0, 0, 0, 400);
   _intersectionPts = new ArrayList();
+  _running = false;
 }
 
 void draw() {
@@ -94,10 +95,15 @@ void draw() {
   }
 }
 
-void step() {
+void toggleDebug() {
+  _debug = !_debug;
+}
+
+String step() {
   // add endpoints to queue
   if (!_running) {
     _running = true;
+    _intersectionPts.clear(); // reset
     for (int i = 0; i < _lineSegs.size(); i++) {
       LineSegment l = _lineSegs.get(i);
       Point startpt = new Point(l.start()[0], l.start()[1], START, l);
@@ -115,7 +121,7 @@ void step() {
   LineSegment[] neighbors;
   LineSegment[] cl = e.crossingLines();
   if (e.type() == INTERSECTION)
-    neighbors = findNeighbors(cl[0], cl[1], e.getPoint());
+    neighbors = findNeighborsCross(cl[0], cl[1], e.getPoint());
   else
     neighbors = findNeighbors(e);
   _above = neighbors[0];
@@ -167,17 +173,28 @@ void step() {
         _events.insert(new Point(pt[0], pt[1], INTERSECTION, cl[0], _below));
     }
   }
+  
+  String output = "";
+  for (int i = 0; i < _intersectionPts.size(); i++) {
+    float[] f = _intersectionPts.get(i);
+    output += "(" + (int)f[0] + "," + (int)f[1] + ")";
+    if (i < _intersectionPts.size() - 1)
+      output += ", ";
+  }
+  if (_debug)
+    println(output);
+  return output;
 }
 
 LineSegment[] findNeighbors(Point point) {
   float[] pt = point.getPoint();
-  ArrayList<LineSegment> ls = _status.getLines();
+  ArrayList<LineSegment> l = _status.getLines();
   LineSegment[] neighbors = new LineSegment[2]; // {above, below}
   float minAbove = -1000; // arbitrary small number
   float minBelow = 1000; // arbitrary large number
-  for (int i = 0; i < ls.size(); i++) {
+  for (int i = 0; i < l.size(); i++) {
     // find vertical distance from l.start() to ls.get(i)
-    LineSegment n = ls.get(i);
+    LineSegment n = l.get(i);
     LineSegment vert = new LineSegment(pt[0], 0, pt[0], 400);
     float[] p = n.findIntersect(vert);
     float dist = pt[1] - p[1];
@@ -197,8 +214,8 @@ LineSegment[] findNeighbors(Point point) {
   return neighbors;
 }
 
-LineSegment[] findNeighbors(LineSegment a, LineSegment b, float[] pt) {
-  ArrayList<LineSegment> ls = _status.getLines();
+LineSegment[] findNeighborsCross(LineSegment a, LineSegment b, float[] pt) {
+  ArrayList<LineSegment> ls = _status.getLines(); //<>//
   LineSegment[] neighbors = new LineSegment[2]; // {above, below}
   float minAbove = -1000; // arbitrary small number
   float minBelow = 1000; // arbitrary large number
@@ -224,10 +241,11 @@ LineSegment[] findNeighbors(LineSegment a, LineSegment b, float[] pt) {
   return neighbors;
 }
 
-void go() { // run algorithm
+String go() { // run algorithm
   // add endpoints to queue
   if (!_running) {
     _running = true;
+    _intersectionPts.clear(); // reset
     for (int i = 0; i < _lineSegs.size(); i++) {
       LineSegment l = _lineSegs.get(i);
       Point startpt = new Point(l.start()[0], l.start()[1], START, l);
@@ -242,9 +260,19 @@ void go() { // run algorithm
     step();
   }
   _running = false;
-  _intersectionPts.clear(); // reset
   _point[0] = -1;
   _point[1] = -1;
+  
+  String output = "";
+  for (int i = 0; i < _intersectionPts.size(); i++) {
+    float[] f = _intersectionPts.get(i);
+    output += "(" + (int)f[0] + "," + (int)f[1] + ")";
+    if (i < _intersectionPts.size() - 1)
+      output += ", ";
+  }
+  if (_debug)
+    println(output);
+  return output;
 }
 
 void mouseClicked() {
@@ -262,53 +290,11 @@ void mouseClicked() {
       _point[0] = -1; // waiting for new start point
     }
   }
-//  if (mouseButton == RIGHT) {
-//    println("START ALG");
-//    // add endpoints to queue
-//    if (!_running) {
-//      for (int i = 0; i < _lineSegs.size(); i++) {
-//        LineSegment l = _lineSegs.get(i);
-//        Point startpt = new Point(l.start()[0], l.start()[1], START, l);
-//        Point endpt = new Point(l.end()[0], l.end()[1], END, l);
-//        _events.insert(startpt);
-//        _events.insert(endpt);
-//      }
-//      _running = true;
-//    }
-//    if (!_events.empty())
-//      go();
-////      step();
-//    else {
-//      _running = false;
-//      _point[0] = -1;
-//      _point[1] = -1;
-//    }
-//  }
+  if (mouseButton == RIGHT)
+    go();
   if (_debug) {
     println("Size: " + _lineSegs.size());
   }
-}
-
-void keyPressed() {
-  // add endpoints to queue
-  if (!_running) {
-    for (int i = 0; i < _lineSegs.size(); i++) {
-      LineSegment l = _lineSegs.get(i);
-      Point startpt = new Point(l.start()[0], l.start()[1], START, l);
-      Point endpt = new Point(l.end()[0], l.end()[1], END, l);
-      _events.insert(startpt);
-      _events.insert(endpt);
-    }
-    _running = true;
-  }
-    if (!_events.empty())
-      step();
-//      go();
-    else {
-      _running = false;
-      _point[0] = -1;
-      _point[1] = -1;
-    }
 }
 
 void pulseColor() { // increase and decrease color value
