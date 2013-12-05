@@ -4,8 +4,8 @@ final color BLUE = color(148, 164, 181);
 final color ORANGE = color(236, 180, 76);
 final color GREEN = color(208, 230, 217);
 
-boolean _debug = true;
-boolean _running = false;
+boolean _debug = false;
+boolean _running;
 BSTree _lineSegs; // holds events and line segements
 BSTree _status; // lines currently intersecting sweep line
 PriorityQueueTmp _events; // current and future stopping points
@@ -97,6 +97,40 @@ void draw() {
 
 void toggleDebug() {
   _debug = !_debug;
+}
+
+String go() { // run algorithm
+  // add endpoints to queue
+  if (!_running) {
+    _running = true;
+    _intersectionPts.clear(); // reset
+    for (int i = 0; i < _lineSegs.size(); i++) {
+      LineSegment l = _lineSegs.get(i);
+      Point startpt = new Point(l.start()[0], l.start()[1], START, l);
+      Point endpt = new Point(l.end()[0], l.end()[1], END, l);
+      _events.insert(startpt);
+      _events.insert(endpt);
+    }
+    _running = true;
+  }
+  
+  while (!_events.empty()) {
+    step();
+  }
+  _running = false;
+  _point[0] = -1;
+  _point[1] = -1;
+  
+  String output = "";
+  for (int i = 0; i < _intersectionPts.size(); i++) {
+    float[] f = _intersectionPts.get(i);
+    output += "(" + (int)f[0] + "," + (int)f[1] + ")";
+    if (i < _intersectionPts.size() - 1)
+      output += ", ";
+  }
+  if (_debug)
+    println(output);
+  return output;
 }
 
 String step() {
@@ -241,40 +275,6 @@ LineSegment[] findNeighborsCross(LineSegment a, LineSegment b, float[] pt) {
   return neighbors;
 }
 
-String go() { // run algorithm
-  // add endpoints to queue
-  if (!_running) {
-    _running = true;
-    _intersectionPts.clear(); // reset
-    for (int i = 0; i < _lineSegs.size(); i++) {
-      LineSegment l = _lineSegs.get(i);
-      Point startpt = new Point(l.start()[0], l.start()[1], START, l);
-      Point endpt = new Point(l.end()[0], l.end()[1], END, l);
-      _events.insert(startpt);
-      _events.insert(endpt);
-    }
-    _running = true;
-  }
-  
-  while (!_events.empty()) {
-    step();
-  }
-  _running = false;
-  _point[0] = -1;
-  _point[1] = -1;
-  
-  String output = "";
-  for (int i = 0; i < _intersectionPts.size(); i++) {
-    float[] f = _intersectionPts.get(i);
-    output += "(" + (int)f[0] + "," + (int)f[1] + ")";
-    if (i < _intersectionPts.size() - 1)
-      output += ", ";
-  }
-  if (_debug)
-    println(output);
-  return output;
-}
-
 void mouseClicked() {
   if (mouseButton == LEFT && !_running) {
     if (_point[0] == -1) { // waiting for first point
@@ -286,12 +286,9 @@ void mouseClicked() {
       // create a new line from start and end points
       LineSegment l = new LineSegment(_point[0], _point[1], mouseX, 400 - mouseY);
       _lineSegs.insert(l);
-      println("NUM OF LINES: " + _lineSegs.size());
       _point[0] = -1; // waiting for new start point
     }
   }
-  if (mouseButton == RIGHT)
-    go();
   if (_debug) {
     println("Size: " + _lineSegs.size());
   }
